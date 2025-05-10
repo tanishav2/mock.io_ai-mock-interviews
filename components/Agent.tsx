@@ -117,26 +117,36 @@ const Agent = ({
     const handleCall = async () => {
         setCallStatus(CallStatus.CONNECTING);
 
-        if (type === "generate") {
-            await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
-                variableValues: {
-                    username: userName,
-                    userid: userId,
-                },
-            });
-        } else {
-            let formattedQuestions = "";
-            if (questions) {
-                formattedQuestions = questions
-                    .map((question) => `- ${question}`)
-                    .join("\n");
+        try {
+            if (type === "generate") {
+                const workflowId = process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID;
+                if (!workflowId) {
+                    throw new Error("Workflow ID is not configured");
+                }
+                
+                await vapi.start(workflowId, {
+                    variableValues: {
+                        userName: userName || "",
+                        userId: userId || "",
+                    },
+                });
+            } else {
+                let formattedQuestions = "";
+                if (questions) {
+                    formattedQuestions = questions
+                        .map((question) => `- ${question}`)
+                        .join("\n");
+                }
+            
+                await vapi.start(interviewer, {
+                    variableValues: {
+                        questions: formattedQuestions,
+                    },
+                });
             }
-
-            await vapi.start(interviewer, {
-                variableValues: {
-                    questions: formattedQuestions,
-                },
-            });
+        } catch (error) {
+            console.error("Error starting call:", error);
+            setCallStatus(CallStatus.INACTIVE);
         }
     };
 

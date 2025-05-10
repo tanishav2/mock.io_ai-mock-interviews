@@ -98,14 +98,14 @@ export async function signIn(params: SignInParams) {
 
 // Sign out user by clearing the session cookie
 export async function signOut() {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     cookieStore.delete("session");
     return { success: true };
 }
 
 // Get current user from session cookie
 export async function getCurrentUser(): Promise<User | null> {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
 
     const sessionCookie = cookieStore.get("session")?.value;
     if (!sessionCookie) return null;
